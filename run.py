@@ -63,10 +63,26 @@ def insert_data(c, f, time):
 def get_temperature_history():
 	conn = sqlite3.connect(db)
 	cc = conn.cursor()
-	sql = 'SELECT * FROM %s;' % (table)
+	try:
+		time2 = request.args.get('time1')
+		time1 = request.args.get('time2')
+		if len(time1) < 3 or len(time2) < 3:
+			raise Exception
+		time1 = str(time1)[:-3]
+		time2 = str(time2)[:-3]
+		time1 = datetime.fromtimestamp(int(time1)).strftime('%Y-%m-%d %H:%M:%S');
+		time2 = datetime.fromtimestamp(int(time2)).strftime('%Y-%m-%d %H:%M:%S');
+		time1, time2 = str(time1), str(time2)
+	except:
+		pass
+	if time1 and time2:
+		sql = 'SELECT * FROM %s WHERE time BETWEEN "%s" AND "%s"' % (table, time1, time2)
+	else:
+		sql = 'SELECT * FROM %s;' % (table);
 	cc.execute(sql)
 	conn.commit()
 	data = cc.fetchall()
+	#return data
 	conn.close()
 	json_data = []
 	for record in data:
@@ -75,7 +91,29 @@ def get_temperature_history():
 
 @app.route('/api/current_temperature', methods=['GET'])
 def get_current_temperature():
-	return current_temperature(testing=True)
+	return current_temperature(testing=True, rtype='json')
+
+@app.route('/api/get_high_low', methods=['GET'])
+def get_high_low():
+	conn = sqlite3.connect(db)
+	cc = conn.cursor()
+	time1 = (time.time() - (60 * 60 * 24))
+	time2 = time.time()
+	time1 = datetime.fromtimestamp(int(time1)).strftime('%Y-%m-%d %H:%M:%S');
+	time2 = datetime.fromtimestamp(int(time2)).strftime('%Y-%m-%d %H:%M:%S');
+	sql = 'SELECT * FROM %s WHERE time BETWEEN "%s" AND "%s" ORDER BY "f" ASC' % (table, time1, time2)
+	cc.execute(sql)
+	conn.commit()
+	data = cc.fetchall()
+	conn.close()
+
+	json_data = []
+	record = data[0]
+	json_data.append({'f':record[0], 'c':record[1], 'time':record[2], 'type':'low'})
+
+	record = data[len(data) - 1]
+	json_data.append({'f':record[0], 'c':record[1], 'time':record[2], 'type':'high'})	
+	return json.dumps(json_data);
 
 if __name__ == '__main__':
 	app.run(host='0.0.0.0', port=5000)

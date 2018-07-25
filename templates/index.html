@@ -5,23 +5,97 @@
 	<script type="text/javascript" src={{ url_for('static', filename='plotly-latest.min.js') }}></script>
 </head>
 <body>
-<div id='myDiv'>
+<div id='ctemp' style='text-align: center; margin: 0 auto;'>
 </div>
-<script>
+<div id='hlow' style='text-align: center; margin: 0 auto;'>
+</div>
+<div id='myDiv0' style="height:95%; width:95%;">
+</div>
+<div id='myDiv1' style="height:95%; width:95%;">
+</div>
+<div id='myDiv2' style="height:95%; width:95%;">
+</div>
+<div id='myDiv3' style="height:95%; width:95%;">
+</div>
+<div id='myDiv4' style="height:95%; width:95%;">
+</div>
 
+<script>
+function refreshData() {
 var req = new XMLHttpRequest();
 req.overrideMimeType("application/json");
-req.open('GET', 'api/temperature_history', true);
-req.onload  = function() {
+req.open('GET', 'api/current_temperature', true);
+req.send(null);
+req.onreadystatechange = function() {
+if (this.readyState == 4 && this.status == 200) {
+	jdata = JSON.parse(req.responseText);
+	document.getElementById('ctemp').innerHTML = '<h1>Current Temperature: ' + jdata['f'] + 'f' + '</h1>';
+};
+};
+    x = 60 * 15;  // Seconds
+    setTimeout(refreshData, x*1000);
+};
+refreshData();
+
+function hlow() {
+var req = new XMLHttpRequest();
+req.overrideMimeType("application/json");
+req.open('GET', 'api/get_high_low', true);
+req.send(null);
+req.onreadystatechange = function() {
+if (this.readyState == 4 && this.status == 200) {
+        jdata = JSON.parse(req.responseText);
+	var high = '';
+	var low = '';
+	console.log(jdata)
+	for (i=0;i<2;i++){
+		if (jdata[i]['type'] == 'high') {
+			high = jdata[i]['f'];
+		}
+		if (jdata[i]['type'] == 'low') {
+			low = jdata[i]['f']
+		}
+	}
+	console.log(high);
+	console.log(low);
+        
+	document.getElementById('hlow').innerHTML = '<h1>High Today: ' + high + 'f' + '</h1>';
+	document.getElementById('hlow').innerHTML += '<h1>Low Today: ' + low + 'f' + '</h1>';
+	
+};
+};
+};
+hlow();
+
+var dayago = (Date.now() - (60 * 60 * 24 * 1000));
+var weekago = (Date.now() - (60 * 60 * 24 * 7 * 1000));
+var monthago = (Date.now() - (60 * 60 * 24 * 7 * 4 * 1000));
+var yearago = (Date.now() - (60 * 60 * 24 * 7 * 4 * 12 * 1000))
+
+var ranges = ['?time1=' + String(Date.now()) + '&time2=' + String(dayago), 
+		'?time1=' + String(Date.now()) + '&time2=' + String(weekago), 
+		'?time1=' + String(Date.now()) + '&time2=' + String(monthago),
+		'?time1=' + String(Date.now()) + '&time2=' + String(yearago), ''];
+var layouts = ['Day','Week','Month','Year','All Time'];
+
+for(iz=0;iz<=4;iz++){
+(function(iz) {
+var req = new XMLHttpRequest();
+req.overrideMimeType("application/json");
+console.log('api/temperature_history' + ranges[iz]);
+req.open('GET', 'api/temperature_history' + ranges[iz], true);
+req.send(null);
+req.onreadystatechange = function() {
+	if (this.readyState == 4 && this.status == 200) {
 	times = []
 	temps = []
-
 	jdata = JSON.parse(req.responseText);
-	console.log(jdata[0]);
-	l = 100;
+	console.log(jdata);
+	//console.log(jdata[0]);
+	l = (jdata.length);
 	for (i=0; i<l; i++) { //i<jdata.length; i++) {
 		rec = jdata[i];
-		console.log(rec['f'], rec['time']);
+		//console.log(rec['f'], rec['time']);
 		temps.push(rec['f']);
 		times.push(rec['time']);
 	}
@@ -32,85 +106,14 @@ req.onload  = function() {
 		y: temps,
 		type: 'scatter'
 	}];
-	Plotly.newPlot('myDiv', data);
+	var layout = {
+  title: layouts[iz],
 };
-req.send(null);
-
-
-/*
-var red = {
-  type: "scatter",
-  mode: "lines",
-  name: 'AAPL High',
-  x: unpack(rows, 'Date'),
-  y: unpack(rows, 'AAPL.High'),
-  line: {color: '#17BECF'}
-}
-
-var trace1 = {
-  type: "scatter",
-  mode: "lines",
-  name: 'AAPL High',
-  x: unpack(rows, 'Date'),
-  y: unpack(rows, 'AAPL.High'),
-  line: {color: '#17BECF'}
-}
-
-var trace2 = {
-  type: "scatter",
-  mode: "lines",
-  name: 'AAPL Low',
-  x: unpack(rows, 'Date'),
-  y: unpack(rows, 'AAPL.Low'),
-  line: {color: '#7F7F7F'}
-}
-
-var data = [trace1,trace2];
-
-var layout = {
-  title: 'Basic Time Series',
+	Plotly.newPlot('myDiv' + String(iz), data, layout);
 };
-
-Plotly.newPlot('myDiv', data, layout);
-})
-
-*/
-
-
-/*function r(a, b){
-	return Math.floor(Math.random() * b) + a 
+};
+})(iz);
 }
-
-var times = []
-var temps = []
-var day = 0;
-var mcount = 0
-var ma = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul']
-
-
-for (i=0; i<=100; i++){
-	var at = String(r(5, 10)) + '.' + String(r(1,9));
-	//console.log(at);
-	console.log(day);
-	temps.push(at);
-	day = day + 1;
-	if (day % 31 === 0) {
-		day = 0;
-		mcount += 1;
-	}
-	times.push(String(ma[mcount]) + ' ' + String(day));
-}
-
-var data = [
-  {
-    x: times,
-    y: temps,
-    type: 'scatter'
-  }
-];
-
-Plotly.newPlot('myDiv', data);
-*/
 </script>
 </body>
 </html>
