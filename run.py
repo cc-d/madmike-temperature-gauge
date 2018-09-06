@@ -32,11 +32,18 @@ def rpi(a, b, date=False):
 
 def current_temperature(testing=False, rtype='json'):
 	if testing:
-		rantemp = randint(1001,9999)
+		rantemp = randint(-5000,1000)
 		raw_device_data = '56 01 4b 46 7f ff 0b 10 d0 : crc=d0 YES\n' \
-						'55 01 4b 46 7f ff 0a 10 d1 t=2' + str(rantemp)
-		raw_temp = re.findall(r't=\d+', raw_device_data)[0][2:]
-		c = float(raw_temp[:2] + '.' + raw_temp[2:])
+						'55 01 4b 46 7f ff 0a 10 d1 t=' + str(rantemp)
+		raw_temp = re.findall(r't=-?\d+', raw_device_data)[0][2:]
+		negative = ''
+		if raw_temp[0] == '-':
+			negative = '-'
+			raw_temp = raw_temp[1:]
+		if len(raw_temp) < 5:
+			raw_temp = ((5 - len(raw_temp)) * '0') + raw_temp
+
+		c = float(negative + raw_temp[:2] + '.' + raw_temp[2:])
 		month, day = rpi(1,12), rpi(1,31)
 		if month == 2:
 			day = rpi(1,28)
@@ -117,7 +124,9 @@ def get_high_low():
 
 if __name__ == '__main__':
 	app.run(host='0.0.0.0', port=5000)
-	#for i in range(5000):
-		#ct = current_temperature(testing=True, rtype='dict')
-		#print(ct)
-		#insert_data(ct['c'], ct['f'], ct['time'])
+	'''
+	for i in range(5000):
+		ct = current_temperature(testing=True, rtype='dict')
+		print(ct)
+		insert_data(ct['c'], ct['f'], ct['time'])
+	'''
