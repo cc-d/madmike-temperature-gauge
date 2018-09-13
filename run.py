@@ -1,6 +1,6 @@
 import json
 #import random
-from random import randint
+from random import randint, choice
 import re
 import time
 import os
@@ -32,7 +32,8 @@ def rpi(a, b, date=False):
 
 def current_temperature(testing=False, rtype='json'):
 	if testing:
-		rantemp = randint(-5000,1000)
+		#rantemp = randint(-5000,1000)
+		rantemp = randint(500,5000)
 		raw_device_data = '56 01 4b 46 7f ff 0b 10 d0 : crc=d0 YES\n' \
 						'55 01 4b 46 7f ff 0a 10 d1 t=' + str(rantemp)
 		raw_temp = re.findall(r't=-?\d+', raw_device_data)[0][2:]
@@ -45,11 +46,13 @@ def current_temperature(testing=False, rtype='json'):
 
 		c = float(negative + raw_temp[:2] + '.' + raw_temp[2:])
 		month, day = rpi(1,12), rpi(1,31)
+		month = rpi(1,9)
 		if month == 2:
 			day = rpi(1,28)
 		elif month == 4 or month == 6 or month == 9 or 11:
 			day = rpi(1,30)
-		time = '%s-%s-%s %s:%s:%s' % (rpi(2017,2018), month, day, rpi(0,23), rpi(0,59), rpi(0,59))
+		#time = '%s-%s-%s %s:%s:%s' % (rpi(2017,2018), month, day, rpi(0,23), rpi(0,59), rpi(0,59))
+		time = '%s-%s-%s %s:%s:%s' % (2018, month, day, rpi(0,23), choice([0,15,30,45]), rpi(0))
 	else:
 		time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 		return False
@@ -124,9 +127,9 @@ def get_high_low():
 
 if __name__ == '__main__':
 	app.run(host='0.0.0.0', port=5000)
-	'''
+'''
 	for i in range(5000):
 		ct = current_temperature(testing=True, rtype='dict')
 		print(ct)
 		insert_data(ct['c'], ct['f'], ct['time'])
-	'''
+'''
