@@ -52,7 +52,7 @@ def current_temperature(testing=False, rtype='json'):
 		elif month == 4 or month == 6 or month == 9 or 11:
 			day = rpi(1,30)
 		#time = '%s-%s-%s %s:%s:%s' % (rpi(2017,2018), month, day, rpi(0,23), rpi(0,59), rpi(0,59))
-		time = '%s-%s-%s %s:%s:%s' % (2018, month, day, rpi(0,23), choice([0,15,30,45]), rpi(0))
+		time = '%s-%s-%s %s:%s:%s' % (2018, month, day, rpi(0,23), choice(['00',15,30,45]), '00')
 	else:
 		time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 		return False
