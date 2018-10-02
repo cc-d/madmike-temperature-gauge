@@ -3,19 +3,8 @@
 	<title>Temperature Data</title>
 	<script type="text/javascript" src="{{ url_for('static', filename='jquery-3.3.1.js') }}"></script>
 	<script type="text/javascript" src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
-</head>
-<body>
-<div id="full" style="display:none;">
-	<div id="closegraph">
-		<a id="closeicon" href="javascript:showcontent()">x</a>
-	</div>
-	<div id="fullgraph">
-	</div>
-</div>
+
 <style>
-body {
-	height:100%;
-}
 #full {
 	position: absolute;
 	color: black;
@@ -46,33 +35,27 @@ body {
 	text-align: center;
 }
 body{
-	background-color: gray;
+	background-color: #606060;
+	font-family: arial;
 }
 h1{
 	color: #f6f6f6;
 }
 #squarecontainer{
   margin: 0 auto;
-  width: 1200px;
-  height: 1000px;
-  background-color: yellow;
+  width: 100%;
+  height: 100%;
 }
 #topr{
-  width: 1200px;
-  height: 500px;
-  background-color: black;
+  width: 100%;
+  height: 100%;
   display: inline-block;
-}
-#botr{
-  width: 1200px;
-  height: 500px;
-  background-color: black;
-  display: inline-block;
+  text-align: center;
 }
 .square{
   margin: 3px;
-  width: 590px;
-  height: 490px;
+  width: 280px;
+  height: 280px;
   background-color: green;
   display: inline-block;
 }
@@ -88,80 +71,53 @@ h1{
 #myDiv3{
 	display: inline-block;
 }
-
-#topg{
-	width:1500px;
-}
-#botg{
-	width:1500px;
-}
-#graphs{
-	display: inline-block;
-	margin: 0 auto;
-}
 </style>
-<div id='actualcontent'>
-<h1 id='title'>Walk-In Cooler Temperature Center</h1>
-<div id='cDateTime' style="margin: 0 auto; text-align: center">
-	<div id='leftBlock' style="display: inline-block;">
-		<div style="display: inline-block;">
+</head>
+
+<body>
+<div id="full" style="display:none;">
+	<div id="closegraph">
+		<a id="closeicon" href="javascript:showcontent()">x</a>
+	</div>
+	<div id="fullgraph">
+	</div>
+</div>
+
+
+<div style='margin: 0 auto; text-align: center'>
+	<div style='display: inline-block;'>
+		<div style='display: inline-block;'>
 			<h1>Current Time: <br>Current Date: </h1>
 		</div>
-		<div id='ctime' style="display: inline-block;">
-		</div>
+		<div id='ctime' style='display: inline-block;'></div>
 	</div>
-	<div id='rightBlock' style="display: inline-block; padding-left: 100px"> 
-		<div style="display: inline-block; margin: 0 auto;">
-			<h1 style="font-size: 50px;">Current Temperature: </br></h1>
+	<div style='display: inline-block;'>
+		<div style='display: inline-block; padding-left: 50px;'>
+			<h1>Current Temp:</h1>
 		</div>
 		<div id='ctemp' style='display: inline-block; font-size: 30px;'></div>
 	</div>
 </div>
-<!--<div id='ctemp' style='text-align: center; margin: 0 auto;'>
-</div>-->
 <div id='hlow' style='text-align: center; margin: 0 auto;'>
 </div>
-<div id="squarecontainer">
+<div id='squarecontainer'>
    <div id="topr">
      <div id='myDiv0' class="square" onclick="gensingle(0)">
-     
      </div>
+     
      <div id='myDiv1' class="square" onclick="gensingle(1)">
-     
      </div>
-   </div>
-   <div id="botr">
+   
      <div id='myDiv2' class="square" onclick="gensingle(2)">
-     
      </div>
+     
      <div id='myDiv3' class="square" onclick="gensingle(3)">
      </div>
    </div>
 </div>
-<div id="myDiv4" style="height:500px; width: 1200px; margin: 0 auto;" onclick="gensingle(4)">
+<div id='myDiv4' style='height:300px; width: 90%; margin: 0 auto;' onclick="gensingle(4)">
 </div>
-<!--
-<div id="graphs">
-<div id='smallGraphs'>
-	<div id="topg" style="display: inline-block">
-		<div id='myDiv0' class="topGraph mydiv">
-		</div>
-		<div id='myDiv1' class="topGraph mydiv">
-		</div>
-	</div>
-	<div id="botg">
-		<div id='myDiv2' class="botGraph mydiv">
-		</div>
-		<div id='myDiv3' class="botGraph mydiv">
-		</div>
-	</div>
-</div>
-<div id="botf" style="width: 1500px;">
-<div id='myDiv4' style="height:95%; width:95%;">
-</div>
-</div>
--->
-</div>
+
 
 <script>
 function refreshData() {
@@ -172,13 +128,15 @@ req.send(null);
 req.onreadystatechange = function() {
 if (this.readyState == 4 && this.status == 200) {
 	jdata = JSON.parse(req.responseText);
-	document.getElementById('ctemp').innerHTML = '<h1  style="display: inline-block; color:LightGreen">' + jdata['f'] + 'f' + '</h1>';
+document.getElementById('ctemp').innerHTML = '<h1 style="padding-left: 20px; color:LightGreen;">' + jdata['f'] + ' F' + '</h1>';
 };
+
 var ctime = new Date();
 var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
 //<h1>Current Date<br>Time</h1>
-document.getElementById('ctime').innerHTML = '<h1 style="padding-left: 20px; display: inline-block; color:LightGreen">' + ctime.getHours() + ':' + ctime.getMinutes() + '</br>' + months[ctime.getMonth()] + ' ' + ctime.getDay() + ', ' + ctime.getFullYear() + '</h1>';
+document.getElementById('ctime').innerHTML = '<h1 style="padding-left: 20px; color:LightGreen;">' + ctime.getHours() + ':' + ctime.getMinutes() + '</br>' + months[ctime.getMonth()] + ' ' + ctime.getDay() + ', ' + ctime.getFullYear() + '</h1>';
 
 
 };
@@ -209,9 +167,9 @@ if (this.readyState == 4 && this.status == 200) {
 	}
 	//console.log(high);
 	//console.log(low);
-    low = '<p style="display: inline-block; color: blue;">' + low + 'f' + '</p>';
-    high = '<p style="display: inline-block; color: red;">' + high + 'f' + '</p>';
-	document.getElementById('hlow').innerHTML = '<div style="display: inline-block"><h1 id="ht">High Today: ' + high  + '</h1></div>';
+    low = '<p style="display: inline-block; color: blue;">' + low + ' F' + '</p>';
+    high = '<p style="display: inline-block; color: red;">' + high + ' F' + '</p>';
+	document.getElementById('hlow').innerHTML = '<div style="display: inline-block;"><h1 id="ht">High Today: ' + high  + '</h1></div>';
 	document.getElementById('hlow').innerHTML += '<div style="display: inline-block; padding-left: 80px;"><h1 id="lt">Low Today: ' + low  + '</h1></div>';
 	
 };
@@ -328,7 +286,6 @@ function showcontent(){
 }
 
 </script>
-</div>
-</body>
 
+</body>
 </html>

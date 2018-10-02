@@ -5,13 +5,24 @@ import re
 import time
 import os
 import sqlite3
+
+import smtplib
+from email.mime.text import MIMEText
+
 from datetime import datetime
 from flask import Flask, render_template, request
 app = Flask(__name__)
 
 global db
 global table
-db, table = 'history.db', 'test'
+db, table = '/home/pi/madmike-temperature-gauge/history.db', 'test'
+
+global sendto
+sendto = 'ccarterdev@gmail.com'
+
+global max_high_temp_f
+global max_low_temp_f
+max_high_temp_f, max_low_temp_f = 50, 32
 
 @app.route('/')
 def index():
@@ -24,42 +35,87 @@ def to_f(c):
 	return '{:.3f}'.format(c * 9/5 + 32)
 
 # random paded int
-def rpi(a, b, date=False):
-	i = randint(a,b)
+def rpi(a=None, b=None, num=False, date=False):
+	if not num and a and b:
+		i = randint(a,b)
+	else:
+		i = int(num)
 	if len(str(i)) == 1:
 		i = '0' + str(i)
 	return i
 
-def current_temperature(testing=False, rtype='json'):
+def semail(message='No Message'):
+	global sendto
+
+	me, you = 'localhost@localhost', sendto
+	msg = MIMEText(message)
+	msg['Subject'] = message
+	msg['From'] = me
+	msg['To'] = sendto
+
+	s = smtplib.SMTP('localhost')
+	s.sendmail(me, [you], msg.as_string())
+	return True
+
+
+def current_temperature(testing=False, email_alert=False, show_error=False, rtype='json'):
 	if testing:
 		#rantemp = randint(-5000,1000)
 		rantemp = randint(500,5000)
 		raw_device_data = '56 01 4b 46 7f ff 0b 10 d0 : crc=d0 YES\n' \
 						'55 01 4b 46 7f ff 0a 10 d1 t=' + str(rantemp)
-		raw_temp = re.findall(r't=-?\d+', raw_device_data)[0][2:]
-		negative = ''
-		if raw_temp[0] == '-':
-			negative = '-'
-			raw_temp = raw_temp[1:]
-		if len(raw_temp) < 5:
-			raw_temp = ((5 - len(raw_temp)) * '0') + raw_temp
-
-		c = float(negative + raw_temp[:2] + '.' + raw_temp[2:])
 		month, day = rpi(1,12), rpi(1,31)
-		month = rpi(1,9)
 		if month == 2:
 			day = rpi(1,28)
 		elif month == 4 or month == 6 or month == 9 or 11:
 			day = rpi(1,30)
-		#time = '%s-%s-%s %s:%s:%s' % (rpi(2017,2018), month, day, rpi(0,23), rpi(0,59), rpi(0,59))
-		time = '%s-%s-%s %s:%s:%s' % (2018, month, day, rpi(0,23), choice(['00',15,30,45]), '00')
+		stime = '%s-%s-%s %s:%s:%s' % (2018, month, day, rpi(0,23), choice(['00',15,30,45]), '00')
 	else:
-		time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-		return False
+		raw_device_data = os.popen('cat /sys/bus/w1/devices/28-00000a29c2c1/w1_slave').read()
+		month, day = rpi(num=int(datetime.now().month)), rpi(num=int(datetime.now().day))
+		now = datetime.now()
+		stime = '%s-%s-%s %s:%s:%s' % (rpi(num=int(now.year)), rpi(num=int(now.month)), rpi(num=int(now.day)), 
+			rpi(num=int(now.hour)), rpi(num=int(now.minute)), rpi(num=int(now.second)))
+
+	raw_temp = re.findall(r't=-?\d+', raw_device_data)[0][2:]
+	negative = ''
+	if raw_temp[0] == '-':
+		negative = '-'
+		raw_temp = raw_temp[1:]
+	if len(raw_temp) < 5:
+		raw_temp = ((5 - len(raw_temp)) * '0') + raw_temp
+	c = float(negative + raw_temp[:2] + '.' + raw_temp[2:])
+
+	error = 'None'
+	if not testing:
+		global sendto
+		global max_high_temp_f
+		global max_low_temp_f
+		if to_f(c) > max_high_temp_f or to_f(c) < max_low_temp_f:
+			error = 'Temperature %s is outside of range!' % to_f(c)
+			if email_alert:
+				se = semail(message=error)
+				print(se)
+			with open('error.log', 'a+') as e:
+				print('%s | %s' % (time.time(), error))
+				e.write('%s | %s' % (time.time(), error))
+
+	r = {'f':to_f(c), 'c':c, 'time':stime}
+
+	if show_error:
+		r['error'] = error
+
 	if rtype == 'json':
-		return json.dumps({'f':to_f(c), 'c':c, 'time':time})
+		return json.dumps(r)
 	elif rtype == 'dict':
-		return {'f':to_f(c), 'c':c, 'time':time}
+		return r
+	return True
+
+def poll_temp(testing=False, email_alert=True, show_error=True):
+	ct = current_temperature(testing=testing, email_alert=email_alert, rtype='dict')
+	print(ct)
+	insert_data(ct['c'], ct['f'], ct['time'])
+	return True
 
 def insert_data(c, f, time):
 	conn = sqlite3.connect(db)
@@ -68,6 +124,7 @@ def insert_data(c, f, time):
 	cc.execute(sql)
 	conn.commit()
 	conn.close()
+	return True
 
 @app.route('/api/temperature_history', methods=['GET'])
 def get_temperature_history():
