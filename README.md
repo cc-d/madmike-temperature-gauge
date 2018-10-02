@@ -12,7 +12,7 @@ table = Name of table to use, I've already created a table called 'prod' with th
 'test' to 'prod' whenever you are ready to start recording ONLY real data.
 
 
-sendto = 'ccarterdev@gmail.com'
+sendto = 'ccarterdev ATSYMBOL gmail DOTSYMBOL com'
 
 sendto = The email address to warning emails to.
 
