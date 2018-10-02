@@ -1,104 +1,134 @@
 <!DOCTYPE html>
+<!-- 
+The TouchScreen Resolution is 1024 x 1280.
+
+Since we know the screen resolution, and  original position, we can
+use absolute positions for styling.
+
+All javascript and styling is in one file for simple portability sake,
+don't write html this way LOL!
+-->
 <head>
 	<title>Temperature Data</title>
 	<script type="text/javascript" src="{{ url_for('static', filename='jquery-3.3.1.js') }}"></script>
 	<script type="text/javascript" src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
-
 <style>
-#full {
+body {
+	margin: 0;
 	position: absolute;
-	color: black;
-	height: 100%;
-	width: 98%;
-}
-#fullgraph {
-	position: inline-block;
-	color: green;
-	margin-top: 100px;
-	height: 100%;
-	width: 100%;
-}
-#closeicon {
-	height: 100%;
-	width: 100%;
-	font-size: 80px;
-}
-#closegraph {
-	position: inline-block;
-	float: right;
-	width: 50px;
-	height: 50px;
-}
-#title{
-	font-size: 40px;
-	color: yellow;
-	text-align: center;
-}
-body{
+	height: 1024px;
+	width: 1280px;
+	max-height: 1024px;
+	max-width: 1280px;
+	min-height: 1024px;
+	min-width: 1280px;
 	background-color: #606060;
 	font-family: arial;
 }
-h1{
-	color: #f6f6f6;
+#topsection {
+	position: absolute;
+	height: 205px;
 }
-#squarecontainer{
-  margin: 0 auto;
-  width: 100%;
-  height: 100%;
+#ctime {
+	color: bisque;
+	position: absolute;
+	margin-left: 228px;
+	width: 250px;
+	margin-top: -117px;
 }
-#topr{
-  width: 100%;
-  height: 100%;
-  display: inline-block;
-  text-align: center;
+#cte {
+	margin-left: 475px;
+	margin-top: -122px;
+	position: absolute;
+	width: 400px;
+	height: 80px;
+
 }
-.square{
-  margin: 3px;
-  width: 280px;
-  height: 280px;
-  background-color: green;
-  display: inline-block;
+#hcte {
+	color: azure;
+	position: absolute;
 }
-#myDiv0{
+#hctcd {
+	color: azure;
+}
+#ctemp {
+	color: lightgreen;
+	margin-left: 250px;
+}
+#hlow {
+	position: absolute;
+	color: azure;
+}
+#indivhighid {
+	position: absolute;
+	margin-left: 900px;
+	margin-top: -124px;
+	width: 350px;
+}
+#indivlowid {
+	position: absolute;
+	width: 350px;
+	margin-left: 900px;
+	margin-top: -116px;
+}
+#phighid {
+	color: orangered;
 	display: inline-block;
 }
-#myDiv1{
+#ht {
+	margin-top: -10px;
+}
+#lt {
+	width: 350px;
+}
+#plowid {
+	color: deepskyblue;
 	display: inline-block;
 }
-#myDiv2{
+#squarecontainer {
+	position: absolute;
+	margin-top: 120px;
+	width: 1280px;
+	height: 768px;
+}
+.square {
+	height: 430px;
+	width: 635px;
 	display: inline-block;
 }
-#myDiv3{
-	display: inline-block;
+#fullgraph {
+	height: 1000px;
+	width: 1270px;
 }
 </style>
+
 </head>
 
 <body>
-<div id="full" style="display:none;">
-	<div id="closegraph">
-		<a id="closeicon" href="javascript:showcontent()">x</a>
-	</div>
+<div id="full" onclick="showpage();" style="display:none;">	
 	<div id="fullgraph">
 	</div>
 </div>
 
+<div id="conwrap">
 
-<div style='margin: 0 auto; text-align: center'>
-	<div style='display: inline-block;'>
-		<div style='display: inline-block;'>
-			<h1>Current Time: <br>Current Date: </h1>
+<div id="topsection">
+	<div id="topgs">
+		<div id="ctcd">
+			<div id="hctcd">
+				<h1>Current Time: <br>Current Date: </h1>
+			</div>
+			<div id='ctime'></div>
 		</div>
-		<div id='ctime' style='display: inline-block;'></div>
-	</div>
-	<div style='display: inline-block;'>
-		<div style='display: inline-block; padding-left: 50px;'>
-			<h1>Current Temp:</h1>
+		<div id="cte">
+			<div id="hcte">
+				<h1>Current Temp:</h1>
+			</div>
+			<div id='ctemp'></div>
 		</div>
-		<div id='ctemp' style='display: inline-block; font-size: 30px;'></div>
 	</div>
-</div>
-<div id='hlow' style='text-align: center; margin: 0 auto;'>
+	<div id='hlow'>
+	</div>
 </div>
 <div id='squarecontainer'>
    <div id="topr">
@@ -115,11 +145,39 @@ h1{
      </div>
    </div>
 </div>
-<div id='myDiv4' style='height:300px; width: 90%; margin: 0 auto;' onclick="gensingle(4)">
+
+<div id='myDiv4' style='display: none; height:300px; width: 90%; margin: 0 auto;' onclick="gensingle(4)">
+</div>
 </div>
 
 
 <script>
+function pad(p) {
+	if (p.toString().length === 1) {
+		return '0' + p.toString();
+	}
+	return p;
+}
+function to12(t) {
+	newt = ''; // 1-12
+	spec = ''; // AM-PM
+	t = t.split(':');
+	hour = t[0];
+	min = t[1];
+	if (hour < 12) {
+		spec = 'AM';
+		if (hour == '0') {
+			newt = '12';
+		} else {
+			newt = hour;
+		}
+	} else {
+		hour = hour - 12;
+		newt = hour;
+		spec = 'PM';
+	}
+	return newt + ':' + t[1] + ' ' + spec;
+}
 function refreshData() {
 var req = new XMLHttpRequest();
 req.overrideMimeType("application/json");
@@ -128,16 +186,17 @@ req.send(null);
 req.onreadystatechange = function() {
 if (this.readyState == 4 && this.status == 200) {
 	jdata = JSON.parse(req.responseText);
-document.getElementById('ctemp').innerHTML = '<h1 style="padding-left: 20px; color:LightGreen;">' + jdata['f'] + ' F' + '</h1>';
+document.getElementById('ctemp').innerHTML = '<h1 id="ctemplg">' + jdata['f'] + ' F' + '</h1>';
 };
 
 var ctime = new Date();
 var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-//<h1>Current Date<br>Time</h1>
-document.getElementById('ctime').innerHTML = '<h1 style="padding-left: 20px; color:LightGreen;">' + ctime.getHours() + ':' + ctime.getMinutes() + '</br>' + months[ctime.getMonth()] + ' ' + ctime.getDay() + ', ' + ctime.getFullYear() + '</h1>';
+var mintime = ctime.getHours() + ':' + pad(ctime.getMinutes());
+mintime = to12(mintime);
 
+document.getElementById('ctime').innerHTML = '<h1 id="ctimelg">' + mintime + '</br>' + months[ctime.getMonth()] + ' ' + ctime.getDay() + ', ' + ctime.getFullYear() + '</h1>';
 
 };
     //x = 60 * 15;  // Once every 15 minutes
@@ -156,7 +215,6 @@ if (this.readyState == 4 && this.status == 200) {
         jdata = JSON.parse(req.responseText);
 	var high = '';
 	var low = '';
-	//console.log(jdata)
 	for (i=0;i<2;i++){
 		if (jdata[i]['type'] == 'high') {
 			high = jdata[i]['f'];
@@ -165,12 +223,10 @@ if (this.readyState == 4 && this.status == 200) {
 			low = jdata[i]['f']
 		}
 	}
-	//console.log(high);
-	//console.log(low);
-    low = '<p style="display: inline-block; color: blue;">' + low + ' F' + '</p>';
-    high = '<p style="display: inline-block; color: red;">' + high + ' F' + '</p>';
-	document.getElementById('hlow').innerHTML = '<div style="display: inline-block;"><h1 id="ht">High Today: ' + high  + '</h1></div>';
-	document.getElementById('hlow').innerHTML += '<div style="display: inline-block; padding-left: 80px;"><h1 id="lt">Low Today: ' + low  + '</h1></div>';
+    low = '<p id="plowid">' + low + ' F' + '</p>';
+    high = '<p id="phighid">' + high + ' F' + '</p>';
+	document.getElementById('hlow').innerHTML = '<div id="indivhighid"><h1 id="ht">High Today: ' + high  + '</h1></div>';
+	document.getElementById('hlow').innerHTML += '<div id="indivlowid"><h1 id="lt">Low Today: ' + low  + '</h1></div>';
 	
 };
 };
@@ -193,7 +249,6 @@ function gendefs() {
 	(function(iz) {
 	var req = new XMLHttpRequest();
 	req.overrideMimeType("application/json");
-	//console.log('api/temperature_history' + ranges[iz]);
 	req.open('GET', 'api/temperature_history' + ranges[iz], true);
 	req.send(null);
 	req.onreadystatechange = function() {
@@ -201,18 +256,13 @@ function gendefs() {
 		times = []
 		temps = []
 		jdata = JSON.parse(req.responseText);
-		//console.log(jdata);
-		//console.log(jdata[0]);
 		l = (jdata.length);
-		for (i=0; i<l; i++) { //i<jdata.length; i++) {
+		for (i=0; i<l; i++) {
 			rec = jdata[i];
-			//console.log(rec['f'], rec['time']);
 			temps.push(rec['f']);
 			times.push(rec['time']);
 		}
 		var data = [{
-			//x: ['2013-10-04 22:23:00', '2013-11-04 22:23:00', '2013-12-04 22:23:00'],
-			//y: [1, 3, 6],
 			x: times.sort(),
 			y: temps,
 			type: 'scatter'
@@ -229,8 +279,7 @@ function gendefs() {
 gendefs();
 
 function gensingle(targi) {
-	$('#actualcontent').hide()
-	$('#full').show()
+	showgraph();
 	var dayago = (Date.now() - (60 * 60 * 24 * 1000));
 	var weekago = (Date.now() - (60 * 60 * 24 * 7 * 1000));
 	var monthago = (Date.now() - (60 * 60 * 24 * 7 * 4 * 1000));
@@ -246,7 +295,6 @@ function gensingle(targi) {
 	(function(iz) {
 	var req = new XMLHttpRequest();
 	req.overrideMimeType("application/json");
-	//console.log('api/temperature_history' + ranges[iz]);
 	req.open('GET', 'api/temperature_history' + ranges[iz], true);
 	req.send(null);
 	req.onreadystatechange = function() {
@@ -254,18 +302,13 @@ function gensingle(targi) {
 		times = []
 		temps = []
 		jdata = JSON.parse(req.responseText);
-		//console.log(jdata);
-		//console.log(jdata[0]);
 		l = (jdata.length);
-		for (i=0; i<l; i++) { //i<jdata.length; i++) {
+		for (i=0; i<l; i++) {
 			rec = jdata[i];
-			//console.log(rec['f'], rec['time']);
 			temps.push(rec['f']);
 			times.push(rec['time']);
 		}
 		var data = [{
-			//x: ['2013-10-04 22:23:00', '2013-11-04 22:23:00', '2013-12-04 22:23:00'],
-			//y: [1, 3, 6],
 			x: times.sort(),
 			y: temps,
 			type: 'scatter'
@@ -280,9 +323,16 @@ function gensingle(targi) {
 	}
 }
 
-function showcontent(){
-	$('#actualcontent').show()
-	$('#full').hide()
+function showpage() {
+	$('body').css('overflow','unset');
+	$('#conwrap').show();
+	$('#full').hide();
+}
+
+function showgraph() {
+	$('body').css('overflow','hidden');
+	$('#conwrap').hide();
+	$('#full').show();
 }
 
 </script>

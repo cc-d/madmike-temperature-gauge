@@ -13,6 +13,7 @@ from datetime import datetime
 from flask import Flask, render_template, request
 app = Flask(__name__)
 
+########### SCRIPT SETTINGS ###########
 global db
 global table
 db, table = '/home/pi/madmike-temperature-gauge/history.db', 'test'
@@ -23,6 +24,7 @@ sendto = 'ccarterdev@gmail.com'
 global max_high_temp_f
 global max_low_temp_f
 max_high_temp_f, max_low_temp_f = 50, 32
+#######################################
 
 @app.route('/')
 def index():
@@ -60,7 +62,6 @@ def semail(message='No Message'):
 
 def current_temperature(testing=False, email_alert=False, show_error=False, rtype='json'):
 	if testing:
-		#rantemp = randint(-5000,1000)
 		rantemp = randint(500,5000)
 		raw_device_data = '56 01 4b 46 7f ff 0b 10 d0 : crc=d0 YES\n' \
 						'55 01 4b 46 7f ff 0a 10 d1 t=' + str(rantemp)
@@ -149,7 +150,6 @@ def get_temperature_history():
 	cc.execute(sql)
 	conn.commit()
 	data = cc.fetchall()
-	#return data
 	conn.close()
 	json_data = []
 	for record in data:
@@ -184,9 +184,3 @@ def get_high_low():
 
 if __name__ == '__main__':
 	app.run(host='0.0.0.0', port=5000)
-'''
-	for i in range(5000):
-		ct = current_temperature(testing=True, rtype='dict')
-		print(ct)
-		insert_data(ct['c'], ct['f'], ct['time'])
-'''
