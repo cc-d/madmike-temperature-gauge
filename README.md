@@ -2,7 +2,6 @@ GLOBAL VARIABLES
 ===================
 All values are found at the top of run.py
 
-
 db, table = '/home/pi/madmike-temperature-gauge/history.db', 'test'
 
 db = Exact path to your sqlite3 db file
@@ -26,4 +25,4 @@ HOW TO RUN
 ==============
 1. Start Flask Webserver "python3 run.py"
 
-2. Add an entry to crontab for "python3 poll.py" every x interval (suggested 15 minutes). poll.py inserts the live data into the database.
+2. Add an entry to crontab for "python3 poll.py" (preferably as root) every x interval (suggested 15 minutes). poll.py inserts the live data into the database.

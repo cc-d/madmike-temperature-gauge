@@ -93,7 +93,7 @@ body {
 }
 .square {
 	height: 430px;
-	width: 635px;
+	width: 600px;
 	display: inline-block;
 }
 #fullgraph {
@@ -110,7 +110,7 @@ body {
 	</div>
 </div>
 
-<div id="conwrap">
+<div id="conwrap" style="text-align: center;">
 
 <div id="topsection">
 	<div id="topgs">
@@ -124,30 +124,28 @@ body {
 			<div id="hcte">
 				<h1>Current Temp:</h1>
 			</div>
-			<div id='ctemp'></div>
+			<div id="ctemp"></div>
 		</div>
 	</div>
-	<div id='hlow'>
+	<div id="hlow">
 	</div>
 </div>
-<div id='squarecontainer'>
+<div id="squarecontainer">
    <div id="topr">
-     <div id='myDiv0' class="square" onclick="gensingle(0)">
+     <div id="myDiv0" class="square" onclick="gensingle(0)">
      </div>
      
-     <div id='myDiv1' class="square" onclick="gensingle(1)">
+     <div id="myDiv1" class="square" onclick="gensingle(1)">
      </div>
    
-     <div id='myDiv2' class="square" onclick="gensingle(2)">
+     <div id="myDiv2" class="square" onclick="gensingle(2)">
      </div>
      
-     <div id='myDiv3' class="square" onclick="gensingle(3)">
+     <div id="myDiv3" class="square" onclick="gensingle(3)">
      </div>
    </div>
 </div>
 
-<div id='myDiv4' style='display: none; height:300px; width: 90%; margin: 0 auto;' onclick="gensingle(4)">
-</div>
 </div>
 
 
@@ -270,7 +268,7 @@ function gendefs() {
 		var layout = {
 	  title: layouts[iz],
 	};
-		Plotly.newPlot('myDiv' + String(iz), data, layout);
+		Plotly.newPlot('myDiv' + String(iz), data, layout, {staticPlot: true});
 	};
 	};
 	})(iz);
@@ -316,7 +314,7 @@ function gensingle(targi) {
 		var layout = {
 	  title: layouts[iz],
 	};
-		Plotly.newPlot('fullgraph', data, layout);
+		Plotly.newPlot('fullgraph', data, layout,{staticPlot: true});
 	};
 	};
 	})(iz);
