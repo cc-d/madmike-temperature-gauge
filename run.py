@@ -165,7 +165,7 @@ def get_temperature_history():
 
 @app.route('/api/current_temperature', methods=['GET'])
 def get_current_temperature():
-        return current_temperature(testing=True, rtype='json')
+        return current_temperature(testing=False, rtype='json')
 
 @app.route('/api/get_high_low', methods=['GET'])
 def get_high_low():
