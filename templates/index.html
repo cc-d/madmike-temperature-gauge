@@ -152,6 +152,7 @@ body {
    </div>
 </div>
 
+<div id="myDiv4" style="display: hidden;"></div>
 </div>
 
 
@@ -249,7 +250,7 @@ function gendefs() {
 			'?time1=' + String(Date.now()) + '&time2=' + String(yearago), ''];
 	var layouts = ['Day','Week','Month','Year','All Time'];
 	
-	for(iz=0;iz<=3;iz++){
+	for(iz=0;iz<=4;iz++){
 	(function(iz) {
 	var req = new XMLHttpRequest();
 	req.overrideMimeType("application/json");
